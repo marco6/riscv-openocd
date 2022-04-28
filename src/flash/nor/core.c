@@ -732,13 +732,14 @@ static bool flash_write_check_gap(struct flash_bank *bank,
 	target_addr_t aligned2 = flash_write_align_start(bank, addr2);
 	return aligned1 + bank->minimal_write_gap < aligned2;
 }
-
-
+uint8_t binbuf[1024*512];
+extern unsigned char riscvchip;
 int flash_write_unlock_verify(struct target *target, struct image *image,
 	uint32_t *written, bool erase, bool unlock, bool write, bool verify)
 {
 	int retval = ERROR_OK;
-
+	uint32_t startaddr = 0;
+	unsigned long binlen = 0;
 	unsigned int section;
 	uint32_t section_offset;
 	struct flash_bank *c;
@@ -746,7 +747,7 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 
 	section = 0;
 	section_offset = 0;
-
+	memset(binbuf, 0xff, 1024*512);
 	if (written)
 		*written = 0;
 
@@ -797,7 +798,7 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 			section_offset = 0;
 			continue;
 		}
-
+		startaddr = sections[0]->base_address - c->base;
 		/* collect consecutive sections which fall into the same bank */
 		section_last = section;
 		padding[section] = 0;
@@ -970,11 +971,17 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 
 		if (retval == ERROR_OK) {
 			if (write) {
-				/* write flash sectors */
-				retval = flash_driver_write(c, buffer, run_address - c->base, run_size);
+				if (riscvchip) {
+					memcpy((&binbuf[run_address - c->base]), buffer, run_size);
+				} else {
+					/* write flash sectors */
+					retval = flash_driver_write(c, buffer, run_address - c->base, run_size);
+				}
 			}
 		}
-
+		if (riscvchip) {
+			binlen = run_address - c->base + run_size;
+		}
 		if (retval == ERROR_OK) {
 			if (verify) {
 				/* verify flash sectors */
@@ -993,6 +1000,10 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 			*written += run_size;	/* add run size to total written counter */
 	}
 
+	if (!c)
+		return ERROR_FAIL;
+	if (riscvchip)
+		flash_driver_write(c, &binbuf[startaddr], startaddr, (binlen-startaddr));
 done:
 	free(sections);
 	free(padding);

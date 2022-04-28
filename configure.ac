@@ -112,6 +112,7 @@ m4_define([USB1_ADAPTERS],
 	[[[ftdi], [MPSSE mode of FTDI based devices], [FTDI]],
 	[[ftdi_oscan1], [cJTAG OSCAN1 tunneled thru MPSSE], [FTDI_OSCAN1]],
 	[[stlink], [ST-Link Programmer], [HLADAPTER_STLINK]],
+  [[wlink], [WLink Programmer], [WLINK]],
 	[[ti_icdi], [TI ICDI JTAG Programmer], [HLADAPTER_ICDI]],
 	[[ulink], [Keil ULINK JTAG Programmer], [ULINK]],
 	[[usb_blaster_2], [Altera USB-Blaster II Compatible], [USB_BLASTER_2]],
@@ -513,7 +514,11 @@ AS_IF([test "x$build_jtag_vpi" = "xyes"], [
 ], [
   AC_DEFINE([BUILD_JTAG_VPI], [0], [0 if you don't want JTAG VPI.])
 ])
-
+AS_IF([test "x$build_wlink" = "xyes"], [
+  AC_DEFINE([BUILD_WLINK], [1], [1 if you want WLINK.])
+], [
+  AC_DEFINE([BUILD_WLINK], [0], [0 if you don't want WLINK.])
+])
 AS_IF([test "x$build_jtag_dpi" = "xyes"], [
   AC_DEFINE([BUILD_JTAG_DPI], [1], [1 if you want JTAG DPI.])
 ], [
@@ -690,6 +695,7 @@ AM_CONDITIONAL([BCM2835GPIO], [test "x$build_bcm2835gpio" = "xyes"])
 AM_CONDITIONAL([IMX_GPIO], [test "x$build_imx_gpio" = "xyes"])
 AM_CONDITIONAL([BITBANG], [test "x$build_bitbang" = "xyes"])
 AM_CONDITIONAL([JTAG_VPI], [test "x$build_jtag_vpi" = "xyes" -o "x$build_jtag_vpi" = "xyes"])
+AM_CONDITIONAL([WLINK], [test "x$build_wlink" != "xno"])
 AM_CONDITIONAL([JTAG_DPI], [test "x$build_jtag_dpi" = "xyes" -o "x$build_jtag_dpi" = "xyes"])
 AM_CONDITIONAL([USB_BLASTER_DRIVER], [test "x$enable_usb_blaster" != "xno" -o "x$enable_usb_blaster_2" != "xno"])
 AM_CONDITIONAL([AMTJTAGACCEL], [test "x$build_amtjtagaccel" = "xyes"])

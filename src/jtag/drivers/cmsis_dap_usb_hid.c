@@ -45,6 +45,7 @@ struct cmsis_dap_backend_data {
 	hid_device *dev_handle;
 };
 
+
 static void cmsis_dap_hid_close(struct cmsis_dap *dap);
 static int cmsis_dap_hid_alloc(struct cmsis_dap *dap, unsigned int pkt_sz);
 
@@ -74,15 +75,14 @@ static int cmsis_dap_hid_open(struct cmsis_dap *dap, uint16_t vids[], uint16_t p
 		bool found = false;
 
 		if (vids[0] == 0) {
-			if (!cur_dev->product_string) {
+			if (!cur_dev->product_string)
 				LOG_DEBUG("Cannot read product string of device 0x%x:0x%x",
-					  cur_dev->vendor_id, cur_dev->product_id);
-			} else if (wcsstr(cur_dev->product_string, L"CMSIS-DAP")) {
+					cur_dev->vendor_id, cur_dev->product_id);
+			else if (wcsstr(cur_dev->product_string, L"CMSIS-DAP") || wcsstr(cur_dev->product_string, L"WCH-Link"))
 				/* if the user hasn't specified VID:PID *and*
-				 * product string contains "CMSIS-DAP", pick it
-				 */
+				* product string contains "CMSIS-DAP", pick it
+				*/
 				found = true;
-			}
 		} else {
 			/* otherwise, exhaustively compare against all VID:PID in list */
 			for (i = 0; vids[i] || pids[i]; i++) {

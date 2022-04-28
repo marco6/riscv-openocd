@@ -51,6 +51,7 @@
 #include <jtag/jtag.h>
 #include "rtos/rtos.h"
 #include "target/smp.h"
+#include <jtag/drivers/cmsis_dap.h> /* FIXME perché c'è bisogno di sto dettaglio? */
 
 /**
  * @file
@@ -60,7 +61,13 @@
  * giving GDB access to the JTAG or other hardware debugging facilities
  * found in most modern embedded processors.
  */
-
+extern bool wchwlink;
+extern uint32_t chip_type;
+extern int wlink_quitreset(void);
+extern unsigned char riscvchip;
+extern uint8_t armchip;
+extern void wlink_armquitreset(struct cmsis_dap *dap);
+extern int wlink_address;
 struct target_desc_format {
 	char *tdesc;
 	uint32_t tdesc_length;
@@ -444,7 +451,7 @@ static int gdb_put_packet_inner(struct connection *connection,
 
 	while (1) {
 		gdb_log_outgoing_packet(buffer, len, my_checksum);
-
+		/* LOG_INFO("sending packet '$%s#%2.2x'", debug_buffer, my_checksum); */
 		char local_buffer[1024];
 		local_buffer[0] = '$';
 		if ((size_t)len + 4 <= sizeof(local_buffer)) {
@@ -1080,7 +1087,7 @@ static int gdb_new_connection(struct connection *connection)
 
 	return ERROR_OK;
 }
-
+extern void wlink_endprocess(void);
 static int gdb_connection_closed(struct connection *connection)
 {
 	struct target *target;
@@ -1117,7 +1124,8 @@ static int gdb_connection_closed(struct connection *connection)
 	target_call_event_callbacks(target, TARGET_EVENT_GDB_END);
 
 	target_call_event_callbacks(target, TARGET_EVENT_GDB_DETACH);
-
+	if (wchwlink)
+		wlink_endprocess();
 	return ERROR_OK;
 }
 
@@ -1613,7 +1621,8 @@ static int gdb_write_memory_binary_packet(struct connection *connection,
 	packet++;
 
 	addr = strtoull(packet, &separator, 16);
-
+	if ((addr >= 0x08000000) && (wlink_address != 0x08000000) && (addr <= 0x20000000))
+		return ERROR_SERVER_REMOTE_CLOSED;
 	if (*separator != ',') {
 		LOG_ERROR("incomplete write memory binary packet received, dropping connection");
 		return ERROR_SERVER_REMOTE_CLOSED;
@@ -1715,9 +1724,22 @@ static int gdb_breakpoint_watchpoint_packet(struct connection *connection,
 	int retval;
 
 	LOG_DEBUG("[%s]", target_name(target));
-
 	type = strtoul(packet + 1, &separator, 16);
-
+	if (wchwlink) {
+		if ((riscvchip == 6 || (((uint16_t)chip_type) == 0x050c)) && (type == 1) && target->breakpoints) {
+			struct breakpoint *p = target->breakpoints->next;
+			int len = 0;
+			while (p) {
+				len++;
+				p = p->next;
+			}
+			if (len > 2)
+				type = 0;
+		}
+		if ((riscvchip == 1) || (riscvchip == 2) || (riscvchip == 3) || (riscvchip == 9)
+				|| (riscvchip == 0x0a) || ((uint16_t)chip_type) == 0x0500)
+			type = 0;
+	}
 	if (type == 0)	/* memory breakpoint */
 		bp_type = BKPT_SOFT;
 	else if (type == 1)	/* hardware breakpoint */
@@ -3126,7 +3148,7 @@ static bool gdb_handle_vrun_packet(struct connection *connection, const char *pa
 	gdb_put_packet(connection, "S00", 3);
 	return true;
 }
-
+extern struct cmsis_dap *cmsis_dap_handle;
 static int gdb_v_packet(struct connection *connection,
 		char const *packet, int packet_size)
 {
@@ -3138,6 +3160,12 @@ static int gdb_v_packet(struct connection *connection,
 		int out = target->rtos->gdb_v_packet(connection, packet, packet_size);
 		if (out != GDB_THREAD_PACKET_NOT_CONSUMED)
 			return out;
+	}
+	if (strncmp(packet, "vKill", 5) == 0) {
+		if (riscvchip)
+			wlink_quitreset();
+		else if (armchip)
+			wlink_armquitreset(cmsis_dap_handle);
 	}
 
 	if (strncmp(packet, "vCont", 5) == 0) {
@@ -3173,7 +3201,13 @@ static int gdb_v_packet(struct connection *connection,
 	if (strncmp(packet, "vFlashErase:", 12) == 0) {
 		unsigned long addr;
 		unsigned long length;
-
+		if (wchwlink) {
+			/* if(riscvchip==1||riscvchip==6) */
+			/* { */
+				gdb_put_packet(connection, "OK", 2);
+				return ERROR_OK;
+			/* } */
+		}
 		char const *parse = packet + 12;
 		if (*parse == '\0') {
 			LOG_ERROR("incomplete vFlashErase packet received, dropping connection");
@@ -3383,7 +3417,6 @@ static int gdb_input_inner(struct connection *connection)
 	int retval;
 	struct gdb_connection *gdb_con = connection->priv;
 	static bool warn_use_ext;
-
 	target = get_target_from_connection(connection);
 
 	/* drain input buffer. If one of the packets fail, then an error
@@ -3406,8 +3439,28 @@ static int gdb_input_inner(struct connection *connection)
 		/* terminate with zero */
 		gdb_packet_buffer[packet_size] = '\0';
 
-		gdb_log_incoming_packet(gdb_packet_buffer);
+		/* if (1) {
+			char buf[64];
+			unsigned offset = 0;
+			int i = 0;
+			while (i < packet_size && offset < 56) {
+				if (packet[i] == '\\') {
+					buf[offset++] = '\\';
+					buf[offset++] = '\\';
+				} else if (isprint(packet[i])) {
+					buf[offset++] = packet[i];
+				} else {
+					sprintf(buf + offset, "\\x%02x", (unsigned char) packet[i]);
+					offset += 4;
+				}
+				i++;
+			}
+			buf[offset] = 0;
+			LOG_INFO("received packet: '%s'%s", buf, i < packet_size ? "..." : "");
+		} */
 
+
+		gdb_log_incoming_packet(gdb_packet_buffer);
 		if (packet_size > 0) {
 			retval = ERROR_OK;
 			switch (packet[0]) {
@@ -3541,6 +3594,7 @@ static int gdb_input_inner(struct connection *connection)
 						break;
 					}
 					gdb_put_packet(connection, "OK", 2);
+
 					return ERROR_SERVER_REMOTE_CLOSED;
 				case '!':
 					/* handle extended remote protocol */

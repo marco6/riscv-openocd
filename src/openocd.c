@@ -375,7 +375,6 @@ static int openocd_thread(int argc, char *argv[], struct command_context *cmd_ct
 	}
 
 	ret = server_loop(cmd_ctx);
-
 	int last_signal = server_quit();
 	if (last_signal != ERROR_OK)
 		return last_signal;
