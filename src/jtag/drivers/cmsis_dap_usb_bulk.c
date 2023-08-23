@@ -31,6 +31,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+#include <stdint.h>
 #ifdef HAVE_CONFIG_H	
 #include "config.h"
 #endif
@@ -660,6 +661,7 @@ void wlink_armversion(struct cmsis_dap *dap){
 		}
 	LOG_INFO("%s version %d.%d ",wlink_name, rxbuf[3], rxbuf[4]);
 }
+
 int wlink_armcheckprotect(void)
 {
 	int transferred = 0;
@@ -686,16 +688,18 @@ int wlink_armcheckprotect(void)
 			LOG_ERROR(" Please Disable R-Protect");
 			return ERROR_FAIL;
 		}
-		return ERROR_OK;
 	}
+
+	return ERROR_OK;
 }
+
 int wlink_armerase(void)
 {
 	uint8_t buffer_code[] = { 0x81, 0x02, 0x01, 0x05};
 	int transferred=0;
 	uint8_t buffer_rcode[4];
 	uint32_t *comprogram = NULL;
-	uint32_t *comflash = NULL;
+	const uint32_t *comflash = NULL;
 	if (armchip == 1)
 	{
 		comprogram = program_code1;
@@ -707,15 +711,15 @@ int wlink_armerase(void)
 		comprogram = program_code2;
 		comflash = flash_code2;
 	}
-	uint8_t i = 0;
-	uint8_t *flashcode = (uint8_t *)comflash;
+	/* uint8_t i = 0; */
+	/* uint8_t *flashcode = (uint8_t *)comflash; */
 
 	int h = *(comprogram + 10);
 
 	uint8_t txbuf[64] = {0x0};
 	int loopcount = 0;
-	// hid_write(wlink_dev_handle, buffer_code, 65);
-	// hid_read(wlink_dev_handle, buffer_rcode, 65);
+	/* hid_write(wlink_dev_handle, buffer_code, 65); */
+	/* hid_read(wlink_dev_handle, buffer_rcode, 65); */
 	libusb_bulk_transfer(wlink_dev_handle, 0x02,buffer_code,sizeof(buffer_code),&transferred,timeout);
 	libusb_bulk_transfer(wlink_dev_handle, 0x83,buffer_rcode,sizeof(buffer_rcode),&transferred,timeout);
 	for (int f = 0; f <= 43; f++)
@@ -750,7 +754,7 @@ int wlink_armerase(void)
 int wlink_armwrite(const uint8_t *buffer, uint32_t offset, uint32_t count)
 {
 	int transferred = 0;
-	uint8_t *addr = &offset;
+	uint8_t *addr = (uint8_t *)&offset; /* FIXME this works only for small endian! */
 	uint8_t flash_write[] = {0x81, 0x02, 0x01, 0x02};
 	uint8_t buffer_rcode[4];
 	uint8_t i = 0;
@@ -811,43 +815,11 @@ void wlink_armquitreset(struct cmsis_dap *dap)
 	int transferred =0;
 	uint8_t resetbuffer[] = {0x81, 0x0b, 0x01, 0x00};
 	uint8_t buffer_rcode[4];
-	// hid_write(wlink_dev_handle, resetbuffer, 65);
-	// hid_read(wlink_dev_handle, buffer_rcode, 65);
-    libusb_bulk_transfer(dap->bdata->dev_handle, 0x02,resetbuffer,sizeof(resetbuffer),&transferred,timeout);
-	int ret=libusb_bulk_transfer(dap->bdata->dev_handle, 0x83,buffer_rcode,sizeof(buffer_rcode),&transferred,timeout);
-
-
+	/* hid_write(wlink_dev_handle, resetbuffer, 65); */
+	/* hid_read(wlink_dev_handle, buffer_rcode, 65); */
+	libusb_bulk_transfer(dap->bdata->dev_handle, 0x02, resetbuffer, sizeof(resetbuffer), &transferred, timeout);
+	libusb_bulk_transfer(dap->bdata->dev_handle, 0x83, buffer_rcode, sizeof(buffer_rcode), &transferred, timeout);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 COMMAND_HANDLER(cmsis_dap_handle_usb_interface_command)
 {

@@ -45,7 +45,6 @@ extern unsigned char WriteNonFullPage(unsigned long iaddr,
 
 static int execute_fence(struct target *target);
 extern unsigned char riscvchip;
-extern int server_quit(void);
 extern unsigned long ramaddr;
 uint32_t flashaddr=0;
 extern bool wchwlink;
@@ -257,52 +256,52 @@ static riscv013_info_t *get_info(const struct target *target)
 }
 static int flush_flash_data(struct target *target)
 {
-	uint64_t regs[31];
-	uint64_t s0; 
-	uint64_t ra;
-	uint64_t sp;
-	uint64_t gp;
-	uint64_t tp;
+	/* uint64_t regs[31]; */
+	/* uint64_t s0; */
+	/* uint64_t ra; */
+	/* uint64_t sp; */
+	/* uint64_t gp; */
+	/* uint64_t tp; */
 	uint64_t a0;
 	uint64_t a4;
-	uint64_t a5;
-	uint64_t a6;
-	uint64_t a7;
-	uint64_t s2;
-	uint64_t s3;
-	uint64_t s4;
-	uint64_t s5;
-	uint64_t s6;
-	uint64_t s7;
-	uint64_t s8;
-	uint64_t s9;
-	uint64_t s10;
-	uint64_t s11;
-	uint64_t t4;
-	uint64_t t5;
-	uint64_t t6;	
-	uint64_t t0;
-	uint64_t t1;
-	uint64_t t2;
-	uint64_t t3;	
+	/* uint64_t a5; */
+	/* uint64_t a6; */
+	/* uint64_t a7; */
+	/* uint64_t s2; */
+	/* uint64_t s3; */
+	/* uint64_t s4; */
+	/* uint64_t s5; */
+	/* uint64_t s6; */
+	/* uint64_t s7; */
+	/* uint64_t s8; */
+	/* uint64_t s9; */
+	/* uint64_t s10; */
+	/* uint64_t s11; */
+	/* uint64_t t4; */
+	/* uint64_t t5; */
+	/* uint64_t t6; */
+	/* uint64_t t0; */
+	/* uint64_t t1; */
+	/* uint64_t t2; */
+	/* uint64_t t3; */
 	uint64_t s1; 
 	uint64_t a1; 
 	uint64_t a2; 
 	uint64_t a3; 
 	RISCV013_INFO(info);
-	//write 
+	/* write */
 	if(info->flash_len)
 	{	
 		execute_fence(target);					
 	    register_read_direct(target, &a0, GDB_REGNO_A0);					
-		// register_read_direct(target, &s0, GDB_REGNO_S0);
-		// register_read_direct(target, &ra, GDB_REGNO_RA);
-		// register_read_direct(target, &sp, GDB_REGNO_SP);
-		// register_read_direct(target, &gp, GDB_REGNO_GP);		
-		// register_read_direct(target, &t0, GDB_REGNO_T0);
-		// register_read_direct(target, &t1, GDB_REGNO_T1);
-	    // register_read_direct(target, &t2, GDB_REGNO_T2);
-		// register_read_direct(target, &t3, GDB_REGNO_T3);		
+		/* register_read_direct(target, &s0, GDB_REGNO_S0); */
+		/* register_read_direct(target, &ra, GDB_REGNO_RA); */
+		/* register_read_direct(target, &sp, GDB_REGNO_SP); */
+		/* register_read_direct(target, &gp, GDB_REGNO_GP); */
+		/* register_read_direct(target, &t0, GDB_REGNO_T0); */
+		/* register_read_direct(target, &t1, GDB_REGNO_T1); */
+	    /* register_read_direct(target, &t2, GDB_REGNO_T2); */
+		/* register_read_direct(target, &t3, GDB_REGNO_T3); */
 		register_read_direct(target, &s1, GDB_REGNO_S1); 
 		register_read_direct(target, &a1, GDB_REGNO_A1);
 		register_read_direct(target, &a2, GDB_REGNO_A2);
@@ -310,31 +309,34 @@ static int flush_flash_data(struct target *target)
 		register_read_direct(target, &a4, GDB_REGNO_A4);	
 		WriteNonFullPage(info->flash_start_addr,info->flash_data,info->flash_len);	
 	    register_write_direct(target, GDB_REGNO_A0, a0);	
-		// register_write_direct(target, GDB_REGNO_S0, s0);
-		// register_write_direct(target, GDB_REGNO_RA, ra);
-		// register_write_direct(target, GDB_REGNO_SP, sp);
-		// register_write_direct(target, GDB_REGNO_GP, gp);		
-		// register_write_direct(target, GDB_REGNO_T0, t0);
-		// register_write_direct(target, GDB_REGNO_T1, t1);
-		// register_write_direct(target, GDB_REGNO_T2, t2);
-		// register_write_direct(target, GDB_REGNO_T3, t3);
+		/* register_write_direct(target, GDB_REGNO_S0, s0); */
+		/* register_write_direct(target, GDB_REGNO_RA, ra); */
+		/* register_write_direct(target, GDB_REGNO_SP, sp); */
+		/* register_write_direct(target, GDB_REGNO_GP, gp); */
+		/* register_write_direct(target, GDB_REGNO_T0, t0); */
+		/* register_write_direct(target, GDB_REGNO_T1, t1); */
+		/* register_write_direct(target, GDB_REGNO_T2, t2); */
+		/* register_write_direct(target, GDB_REGNO_T3, t3); */
 		register_write_direct(target, GDB_REGNO_S1, s1);
 		register_write_direct(target, GDB_REGNO_A1, a1);
 		register_write_direct(target, GDB_REGNO_A2, a2);
 		register_write_direct(target, GDB_REGNO_A3, a3);
 		register_write_direct(target, GDB_REGNO_A4, a4);		
-	info->flash_start_addr = 0;
-	info->flash_len = 0;
-	info->flash_offset = 0;
-	memset(info->flash_data,0,sizeof(info->flash_data));
+		info->flash_start_addr = 0;
+		info->flash_len = 0;
+		info->flash_offset = 0;
+		memset(info->flash_data, 0, sizeof(info->flash_data));
 	}
+
+	return ERROR_OK;
 }
+
 int write_flash_data(struct target *target, target_addr_t address,
-		uint32_t size, uint32_t count, uint8_t *buffer)
+		uint32_t size, uint32_t count, const uint8_t *buffer)
 {
 	uint32_t total_len;
-	uint32_t start_address,temp,temp1;
-	uint8_t * start_buffer;
+	uint32_t start_address;
+	const uint8_t *start_buffer;
 	RISCV013_INFO(info);	
 	start_address = address;
 	start_buffer = buffer;
@@ -342,12 +344,11 @@ int write_flash_data(struct target *target, target_addr_t address,
     info->flash_start_addr = start_address;
 	info->flash_len = total_len;
 	info->flash_offset = total_len; 				
-	memcpy(info->flash_data,start_buffer,total_len);				
-	if(total_len <=4)  
-		{
-			flush_flash_data(target);
-			return 0;
-		}
+	memcpy(info->flash_data, start_buffer, total_len);
+	if (total_len <= 4) {
+		flush_flash_data(target); /* FIXME error? */
+		return 0;
+	}
 
 	return 0;
 }
@@ -568,9 +569,9 @@ static uint32_t dtmcontrol_scan(struct target *target, uint32_t out)
 	}
 
 	uint32_t in = buf_get_u32(field.in_value, 0, 32);
-	if(wchwlink){
-		buf_set_u32(&in, 0, 32, 0x00000071);
-	}
+	if (wchwlink)
+		buf_set_u32((uint8_t *)&in, 0, 32, 0x00000071);
+
 	LOG_DEBUG("DTMCS: 0x%x -> 0x%x", out, in);
 
 	return in;
@@ -593,51 +594,55 @@ static int wlink_dmi_op_timeout(struct target *target, uint32_t *data_in,
 	dmi_status_t status;
 	uint32_t address_in;
 	uint8_t	recvOP;
-	uint32_t recvData;
+	unsigned long int recvData;
 	if (dmi_busy_encountered)
 		*dmi_busy_encountered = false;
-	
-	jtag_execute_queue();  
-	
+
+	jtag_execute_queue();
+
 	const char *op_name;
 	switch (dmi_op) {
-		case DMI_OP_NOP:
-			op_name = "nop";
-			break;
-		case DMI_OP_READ:
-			op_name = "read";
-			break;
-		case DMI_OP_WRITE:
-			op_name = "write";
-			break;
-		default:
-			LOG_ERROR("Invalid DMI operation: %d", dmi_op);
-			return ERROR_FAIL;
+	case DMI_OP_NOP:
+		op_name = "nop";
+		break;
+	case DMI_OP_READ:
+		op_name = "read";
+		break;
+	case DMI_OP_WRITE:
+		op_name = "write";
+		break;
+	default:
+		LOG_ERROR("Invalid DMI operation: %d", dmi_op);
+		return ERROR_FAIL;
 	}
 
 	time_t start = time(NULL);
-	int result=0;
+	int result = 0;
 	/* This first loop performs the request.  Note that if for some reason this
 	 * stays busy, it is actually due to the previous access. */
 	while (1) {
-		if(dmi_op == DMI_OP_READ)
-		{
-			result=DMI_OP(0, (unsigned char	)address, 0, (unsigned char	)dmi_op, &address_in, data_in,&recvOP);
-			if(!result){
-					LOG_ERROR("failed %s at 0x%x, status=%d", op_name, address, status);
-					LOG_ERROR("Maybe the device has been removed");
-					server_quit();
-					return ERROR_FAIL;
-				}		
-		}else{
-			DMI_OP(0, (unsigned char	)address, data_out, (unsigned char	)dmi_op, &address_in, &recvData,&recvOP);
+		if (dmi_op == DMI_OP_READ) {
+			unsigned long int data = 0; /* FIXME questo non deve succedere. */
+			result = DMI_OP(0, (unsigned char)address, 0, (unsigned char)dmi_op,
+					(unsigned char *)&address_in, &data, &recvOP);
+			*data_in = data;
+			if (!result) {
+				LOG_ERROR("failed %s at 0x%x, status=%d", op_name, address, status);
+				LOG_ERROR("Maybe the device has been removed");
+				server_quit();
+				return ERROR_FAIL;
+			}
+		} else {
+			DMI_OP(0, (unsigned char)address, data_out, (unsigned char)dmi_op, (unsigned char *)&address_in,
+					&recvData, &recvOP);
 		}
 		status = recvOP;
 		if (status == DMI_STATUS_BUSY) {
 			increase_dmi_busy_delay(target);
 			if (dmi_busy_encountered)
 				*dmi_busy_encountered = true;
-			DMI_OP(0, (unsigned char	)DM_ABSTRACTCS, DM_ABSTRACTCS_CMDERR, (unsigned char	)DMI_OP_WRITE, &address_in, &recvData,&recvOP);
+			DMI_OP(0, DM_ABSTRACTCS, DM_ABSTRACTCS_CMDERR, DMI_OP_WRITE, (unsigned char *)&address_in,
+					&recvData, &recvOP);
 		} else if (status == DMI_STATUS_SUCCESS) {
 			break;
 		} else {
@@ -2654,7 +2659,7 @@ static int assert_reset(struct target *target)
 		LOG_DEBUG("[wch] dcsr read fail!");
 	}
 	else{
-		LOG_DEBUG("[wch] read dcsr value is 0x%x", tmpDcsr);
+		LOG_DEBUG("[wch] read dcsr value is 0x%lx", tmpDcsr);
 		//enable ebreak in m&u mode
 		tmpDcsr = set_field(tmpDcsr, CSR_DCSR_EBREAKM, 1);
 		tmpDcsr = set_field(tmpDcsr, CSR_DCSR_EBREAKU, 1);		
@@ -4184,127 +4189,126 @@ static int write_memory(struct target *target, target_addr_t address,
 		LOG_ERROR("BUG: Unsupported size for memory write: %d", size);
 		return ERROR_FAIL;
 	}
-	if(address < 0x20000000)
-	{	
-		if(riscvchip==0x03){		
-		  uint64_t actual_value;
-		  uint8_t txbuffer[4];
-		  uint32_t  length;		
-		  if((address >= ramaddr)){
-					LOG_ERROR("THIS  ADDRESS IS NOT ACCESSIBLE");
-					server_quit();
-					return ERROR_FAIL;																												
-			}										
-			target_addr_t flashaddress=address;
-			if(address < ramaddr)
-			{					
-				if((size*count)==4){						
-			  		  if(address%4==0){
-			  		  	read_memory_progbuf_one(target, address, 4, (uint8_t*)&actual_value );		  			
-			  		  	write_memory_progbuf(target, address, 4, 1, buffer);	  	
-			  		  }else{	
-			  		  	   address=address-2;
-			  			   read_memory_progbuf_one(target, address, 4, (uint8_t*)&actual_value );		  			
-			  		  	   txbuffer[0]= ((uint32_t)actual_value)&0x000000ff;
-			  			   txbuffer[1]= (((uint32_t)actual_value)&0x0000ff00)>>8;
-			  			   txbuffer[2]= *buffer;
-			  			   txbuffer[3]= *(buffer+1);	  			
-			  		  	   write_memory_progbuf(target, address, 4, 1, &txbuffer);			  		  	 
-			  		  	   address=address+2;
-			  		  	   read_memory_progbuf_one(target, address, 4, (uint8_t*)&actual_value );			  		 
-			  		  	   txbuffer[0]= *(buffer+2);
-			  		   	   txbuffer[1]= *(buffer+3);
-			  			   txbuffer[2]= (((uint32_t)actual_value)&0x00ffffff)>>16;
-			  			   txbuffer[3]=((uint32_t)actual_value)>>24;		  		
-			  		  	   write_memory_progbuf(target, address, 4, 1, &txbuffer);
-			  		  	}	  
-				}else{		
-					if((size*count)!=2){
-						
-			  		}else{			  			
-			  			read_memory_progbuf_one(target, 0x0000, 4, (uint8_t*)&actual_value );				  
-			  			if(address%4==0){
-			  			read_memory_progbuf_one(target, address, 4, (uint8_t*)&actual_value );			  		
-			  			txbuffer[0]= *buffer;
-			  			txbuffer[1]= *(buffer+1);
-			  			txbuffer[2]= (((uint32_t)actual_value)&0x00ffffff)>>16;
-			  			txbuffer[3]=((uint32_t)actual_value)>>24;		  		
-			  			write_memory_progbuf(target, address, 4, 1, &txbuffer);
-			  			}else{
-			  					address=address-2;
-			  					read_memory_progbuf_one(target, address, 4, (uint8_t*)&actual_value );			  				
+	if (address < 0x20000000) {
+		if (riscvchip == 0x03) {
+			uint64_t actual_value;
+			uint8_t txbuffer[4];
+			if ((address >= ramaddr)) {
+				LOG_ERROR("THIS  ADDRESS IS NOT ACCESSIBLE");
+				server_quit();
+				return ERROR_FAIL;
+			}
+			if (address < ramaddr) {
+				if ((size*count) == 4) {
+					if ((address%4) == 0) {
+						read_memory_progbuf_one(target, address, 4, (uint8_t *)&actual_value);
+						write_memory_progbuf(target, address, 4, 1, buffer);
+					} else {
+						address = address - 2;
+						read_memory_progbuf_one(target, address, 4, (uint8_t *)&actual_value);
+						txbuffer[0] = ((uint32_t)actual_value)&0x000000ff;
+						txbuffer[1] = (((uint32_t)actual_value)&0x0000ff00)>>8;
+						txbuffer[2] = *buffer;
+						txbuffer[3] = *(buffer+1);
+						write_memory_progbuf(target, address, 4, 1, txbuffer);
+						address = address + 2;
+						read_memory_progbuf_one(target, address, 4, (uint8_t *)&actual_value);
+						txbuffer[0] = *(buffer+2);
+						txbuffer[1] = *(buffer+3);
+						txbuffer[2] = (((uint32_t)actual_value)&0x00ffffff)>>16;
+						txbuffer[3] = ((uint32_t)actual_value)>>24;
+						write_memory_progbuf(target, address, 4, 1, txbuffer);
+					}
+				} else {
+					if ((size*count) == 2) {
+						read_memory_progbuf_one(target, 0x0000, 4, (uint8_t *)&actual_value);
+						if ((address%4) == 0) {
+							read_memory_progbuf_one(target, address, 4, (uint8_t *)&actual_value);
+							txbuffer[0] = *buffer;
+							txbuffer[1] = *(buffer+1);
+							txbuffer[2] = (((uint32_t)actual_value)&0x00ffffff)>>16;
+							txbuffer[3] = ((uint32_t)actual_value)>>24;
+							write_memory_progbuf(target, address, 4, 1, txbuffer);
+						} else {
+							address = address - 2;
+							read_memory_progbuf_one(target, address, 4, (uint8_t *)&actual_value);
 			  			    txbuffer[0]= ((uint32_t)actual_value)&0x000000ff;
 			  			    txbuffer[1]= (((uint32_t)actual_value)&0x0000ff00)>>8;
 			  			    txbuffer[2]= *buffer;
 			  			    txbuffer[3]= *(buffer+1);			  		
-			  				write_memory_progbuf(target, address, 4, 1, &txbuffer);		
-			  			 }	  	
-						}				
+							write_memory_progbuf(target, address, 4, 1, txbuffer);
+						}
+					}
 				}
 			}
 								
 			//write_flash_data(target, flashaddress, size, count, buffer);			
-		}				
-		if((riscvchip==0x01)||(riscvchip==0x02)||(riscvchip==0x06)||(riscvchip==0x05)||(riscvchip==0x09)||(riscvchip==0x0a))
-		{			
-			if(address>=0x08000000)
+		}
+		switch (riscvchip) {
+		case 0x01:
+		case 0x02:
+		case 0x05:
+		case 0x06:
+		case 0x09:
+		case 0x0a:
+			if (address >= 0x08000000)
 				address-=0x08000000;
-			write_flash_data(target, address, size, count, buffer);			
+			write_flash_data(target, address, size, count, buffer);
+			break;
 		}
 		return ERROR_OK;
-	}else{
-	
-	int ret = ERROR_FAIL;
-	RISCV_INFO(r);
-	RISCV013_INFO(info);
+	} else {
+		int ret = ERROR_FAIL;
+		RISCV_INFO(r);
+		RISCV013_INFO(info);
 
-	char *progbuf_result = "disabled";
-	char *sysbus_result = "disabled";
-	char *abstract_result = "disabled";
+		char *progbuf_result = "disabled";
+		char *sysbus_result = "disabled";
+		char *abstract_result = "disabled";
 
-	for (unsigned int i = 0; i < RISCV_NUM_MEM_ACCESS_METHODS; i++) {
-		int method = r->mem_access_methods[i];
+		for (unsigned int i = 0; i < RISCV_NUM_MEM_ACCESS_METHODS; i++) {
+			int method = r->mem_access_methods[i];
 
-		if (method == RISCV_MEM_ACCESS_PROGBUF) {
-			if (mem_should_skip_progbuf(target, address, size, false, &progbuf_result))
-				continue;
+			if (method == RISCV_MEM_ACCESS_PROGBUF) {
+				if (mem_should_skip_progbuf(target, address, size, false, &progbuf_result))
+					continue;
 
-			ret = write_memory_progbuf(target, address, size, count, buffer);
+				ret = write_memory_progbuf(target, address, size, count, buffer);
 
-			if (ret != ERROR_OK)
-				progbuf_result = "failed";
-		} else if (method == RISCV_MEM_ACCESS_SYSBUS) {
-			if (mem_should_skip_sysbus(target, address, size, 0, false, &sysbus_result))
-				continue;
+				if (ret != ERROR_OK)
+					progbuf_result = "failed";
+			} else if (method == RISCV_MEM_ACCESS_SYSBUS) {
+				if (mem_should_skip_sysbus(target, address, size, 0, false, &sysbus_result))
+					continue;
 
-			if (get_field(info->sbcs, DM_SBCS_SBVERSION) == 0)
-				ret = write_memory_bus_v0(target, address, size, count, buffer);
-			else if (get_field(info->sbcs, DM_SBCS_SBVERSION) == 1)
-				ret = write_memory_bus_v1(target, address, size, count, buffer);
+				if (get_field(info->sbcs, DM_SBCS_SBVERSION) == 0)
+					ret = write_memory_bus_v0(target, address, size, count, buffer);
+				else if (get_field(info->sbcs, DM_SBCS_SBVERSION) == 1)
+					ret = write_memory_bus_v1(target, address, size, count, buffer);
 
-			if (ret != ERROR_OK)
-				sysbus_result = "failed";
-		} else if (method == RISCV_MEM_ACCESS_ABSTRACT) {
-			if (mem_should_skip_abstract(target, address, size, 0, false, &abstract_result))
-				continue;
+				if (ret != ERROR_OK)
+					sysbus_result = "failed";
+			} else if (method == RISCV_MEM_ACCESS_ABSTRACT) {
+				if (mem_should_skip_abstract(target, address, size, 0, false, &abstract_result))
+					continue;
 
-			ret = write_memory_abstract(target, address, size, count, buffer);
+				ret = write_memory_abstract(target, address, size, count, buffer);
 
-			if (ret != ERROR_OK)
-				abstract_result = "failed";
-		} else if (method == RISCV_MEM_ACCESS_UNSPECIFIED)
-			/* No further mem access method to try. */
-			break;
+				if (ret != ERROR_OK)
+					abstract_result = "failed";
+			} else if (method == RISCV_MEM_ACCESS_UNSPECIFIED)
+				/* No further mem access method to try. */
+				break;
 
-		log_mem_access_result(target, ret == ERROR_OK, method, false);
+			log_mem_access_result(target, ret == ERROR_OK, method, false);
 
-		if (ret == ERROR_OK)
-			return ret;
-	}
+			if (ret == ERROR_OK)
+				return ret;
+		}
 
-	LOG_ERROR("Target %s: Failed to write memory (addr=0x%" PRIx64 ")", target_name(target), address);
-	LOG_ERROR("  progbuf=%s, sysbus=%s, abstract=%s", progbuf_result, sysbus_result, abstract_result);
-	return ret;
+		LOG_ERROR("Target %s: Failed to write memory (addr=0x%" PRIx64 ")", target_name(target), address);
+		LOG_ERROR("  progbuf=%s, sysbus=%s, abstract=%s", progbuf_result, sysbus_result, abstract_result);
+		return ret;
 	}
 }
 
@@ -5041,20 +5045,19 @@ static int maybe_execute_fence_i(struct target *target)
 }
 int wlink_cleancache(struct target *target)
 {
-	uint64_t old_dpc_value,new_dpc_value,t6_new,t6_old;
-	uint32_t dmcontrol;
-	RISCV013_INFO(info);
+	/* FIXME: remove this shit macro */
+	get_info(target);
+	/* RISCV013_INFO(info); */
 
-	{
-		struct riscv_program program;
-		register_read_direct(target, &t6_old, GDB_REGNO_T6);
-		register_write_direct(target, GDB_REGNO_T6, 4);  
-		riscv_program_init(&program, target);
-		riscv_program_insert(&program, 0x000f8067);      
-		int result = riscv_program_exec(&program, target);
-		usleep(1000);		
-		register_write_direct(target, GDB_REGNO_T6, t6_old);	
-	}
+	uint64_t t6;
+	struct riscv_program program;
+	register_read_direct(target, &t6, GDB_REGNO_T6);
+	register_write_direct(target, GDB_REGNO_T6, 4);
+	riscv_program_init(&program, target);
+	riscv_program_insert(&program, 0x000f8067);
+	riscv_program_exec(&program, target);
+	usleep(1000);
+	register_write_direct(target, GDB_REGNO_T6, t6);
 	return ERROR_OK;
 }
 /* Helper Functions. */
@@ -5062,9 +5065,8 @@ static int riscv013_on_step_or_resume(struct target *target, bool step)
 {
 	if (maybe_execute_fence_i(target) != ERROR_OK)
 		return ERROR_FAIL;
-	if((riscvchip==0x01)){
+	if (riscvchip == 0x01)
 		wlink_cleancache(target);
-	}
 	/* We want to twiddle some bits in the debug CSR so debugging works. */
 	riscv_reg_t dcsr;
 	int result = register_read_direct(target, &dcsr, GDB_REGNO_DCSR);

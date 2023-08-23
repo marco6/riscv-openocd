@@ -100,3 +100,6 @@ tags
 GPATH
 GRTAGS
 GTAGS
+
+build/
+.cache

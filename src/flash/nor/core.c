@@ -738,8 +738,8 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 	uint32_t *written, bool erase, bool unlock, bool write, bool verify)
 {
 	int retval = ERROR_OK;
-	uint32_t startaddr;
-	unsigned long binlen;
+	uint32_t startaddr = 0;
+	unsigned long binlen = 0;
 	unsigned int section;
 	uint32_t section_offset;
 	struct flash_bank *c;
@@ -747,7 +747,7 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 
 	section = 0;
 	section_offset = 0;
-	memset(binbuf,0xff,1024*512);
+	memset(binbuf, 0xff, 1024*512);
 	if (written)
 		*written = 0;
 
@@ -790,7 +790,6 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 
 		/* find the corresponding flash bank */
 		retval = get_flash_bank_by_addr(target, run_address, false, &c);
-		
 		if (retval != ERROR_OK)
 			goto done;
 		if (!c) {
@@ -799,7 +798,7 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 			section_offset = 0;
 			continue;
 		}
-		startaddr=sections[0]->base_address - c->base;
+		startaddr = sections[0]->base_address - c->base;
 		/* collect consecutive sections which fall into the same bank */
 		section_last = section;
 		padding[section] = 0;
@@ -972,16 +971,16 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 
 		if (retval == ERROR_OK) {
 			if (write) {
-				if(riscvchip){
-					memcpy((&binbuf[run_address- c->base]),buffer,run_size);
-				}else{
-				/* write flash sectors */
+				if (riscvchip) {
+					memcpy((&binbuf[run_address - c->base]), buffer, run_size);
+				} else {
+					/* write flash sectors */
 					retval = flash_driver_write(c, buffer, run_address - c->base, run_size);
 				}
 			}
 		}
-		if(riscvchip){
-			binlen=run_address- c->base+run_size;
+		if (riscvchip) {
+			binlen = run_address - c->base + run_size;
 		}
 		if (retval == ERROR_OK) {
 			if (verify) {
@@ -1000,15 +999,11 @@ int flash_write_unlock_verify(struct target *target, struct image *image,
 		if (written)
 			*written += run_size;	/* add run size to total written counter */
 	}
-	
-	if(!c){
-		return ERROR_FAIL;
-    }
-	if(riscvchip){		
-	
-	 flash_driver_write(c, &binbuf[startaddr], startaddr, (binlen-startaddr));
 
-	 }
+	if (!c)
+		return ERROR_FAIL;
+	if (riscvchip)
+		flash_driver_write(c, &binbuf[startaddr], startaddr, (binlen-startaddr));
 done:
 	free(sections);
 	free(padding);

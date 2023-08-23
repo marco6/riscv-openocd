@@ -380,8 +380,6 @@ static int ch32x_write_options(struct flash_bank *bank)
 
 static int ch32x_protect_check(struct flash_bank *bank)
 {
-	
-
 	struct target *target = bank->target;
 	uint32_t protection;
 
@@ -396,27 +394,23 @@ static int ch32x_protect_check(struct flash_bank *bank)
 	if (retval != ERROR_OK)
 		return retval;
 
-	for (int i = 0; i < bank->num_prot_blocks; i++)
+	for (unsigned int i = 0; i < bank->num_prot_blocks; i++)
 		bank->prot_blocks[i].is_protected = (protection & (1 << i)) ? 0 : 1;
 
 	return ERROR_OK;
 }
 
-static int ch32x_erase(struct flash_bank *bank, int first, int last)
-{	
- if(armchip)
- {
-	if(noloadflag)
-		return ERROR_OK;
-				
-	    int ret=wlink_armerase();
-		
-		return ret;
-			
- }	
+static int ch32x_erase(struct flash_bank *bank, unsigned int first, unsigned int last)
+{
+	if (armchip) {
+		if (noloadflag)
+			return ERROR_OK;
+		return wlink_armerase();
+	}
+	return ERROR_OK;
 }
 
-static int ch32x_protect(struct flash_bank *bank, int set, int first, int last)
+static int ch32x_protect(struct flash_bank *bank, int set, unsigned int first, unsigned int last)
 {
 	printf("%d %d %d\n",set,first,last);
 	return ERROR_OK;
@@ -438,7 +432,7 @@ static int ch32x_protect(struct flash_bank *bank, int set, int first, int last)
 		return retval;
 	}
 
-	for (int i = first; i <= last; i++) {
+	for (unsigned int i = first; i <= last; i++) {
 		if (set)
 			ch32x_info->option_bytes.protection &= ~(1 << i);
 		else
@@ -454,62 +448,55 @@ static int ch32x_write_block(struct flash_bank *bank, const uint8_t *buffer,
 	return ERROR_OK;
 }
 
-static int ch32x_write(struct flash_bank *bank, const uint8_t *buffer,
-		uint32_t offset, uint32_t count)
+static int ch32x_write(struct flash_bank *bank, const uint8_t *buffer, uint32_t offset, uint32_t count)
 {
- if(armchip)
- {
+	if (armchip) {
 		if(noloadflag)
-				return ERROR_OK;			
-		int ret=wlink_armwrite(buffer,bank->base + offset,count);				
-		return ret;				
- }
-
+			return ERROR_OK;
+		return wlink_armwrite(buffer, bank->base + offset, count);
+	}
+	return ERROR_OK;
 }
 
 static int ch32x_get_device_id(struct flash_bank *bank, uint32_t *device_id)
 {
 	/* This check the device CPUID core register to detect
 	 * the M0 from the M3 devices. */
- 
 	struct target *target = bank->target;
-	uint32_t cpuid, device_id_register = 0;
-    uint32_t testid=0;
-    uint32_t tmp,tmp1,tmp2=0;
-	uint8_t user_cfg,config;
+	uint32_t testid = 0;
+	uint32_t tmp2 = 0;
+	uint8_t user_cfg, config;
 	target_read_u8(target, 0x1ffff802, &user_cfg);
-	config=user_cfg>>6;
+	config = user_cfg >> 6;
 	target_read_u32(target, 0x1ffff884, &testid);
-	testid =testid >>16;
-	testid &=0xff00;
-	
-  	if((testid==0x2000)||(testid==0x1000)||(testid==0x3000)){
-  		// target_read_u32(target, 0x1ffff7e8, &tmp);
-  		// target_read_u32(target, 0x1ffff8a0, &tmp1);
-  		// if(tmp==tmp1){
-  			target_read_u32(target, 0x1ffff880, &tmp2);
-			
-  			  if(tmp2==0xdc78fe34)
-  			    armchip=1;
-  				*device_id=0x20000410;
-  				wlink_sendchip(config);
-  				return ERROR_OK;
-  		// }
-  	
+	testid = testid >> 16;
+	testid &= 0xff00;
+
+	if ((testid == 0x2000) || (testid == 0x1000) || (testid == 0x3000)) {
+		/* target_read_u32(target, 0x1ffff7e8, &tmp); */
+		/* target_read_u32(target, 0x1ffff8a0, &tmp1); */
+		/* if(tmp==tmp1){ */
+		target_read_u32(target, 0x1ffff880, &tmp2);
+		if (tmp2 == 0xdc78fe34)
+			armchip = 1;
+		*device_id = 0x20000410;
+		wlink_sendchip(config);
+		return ERROR_OK;
+		/* } */
   	}
-  	target_read_u32(target, 0xe000edfc, &testid);
- 
-  	target_read_u32(target, 0xe000edf0, &testid);
-  	
-  	target_read_u32(target, 0x1ffff704, &testid);
-  	
-  	if(((testid>>20)==0x203)||((testid>>20)==0x205)||((testid>>20)==0x207)||((testid>>20)==0x208)){	
-  		 	armchip=2;
-  			*device_id=0x20000410;
-  			wlink_sendchip(config);
-  			return ERROR_OK;
-		}
-	if((armchip != 1)&&(armchip != 2 ) && wlink549 ){
+
+	target_read_u32(target, 0xe000edfc, &testid);
+	target_read_u32(target, 0xe000edf0, &testid);
+	target_read_u32(target, 0x1ffff704, &testid);
+
+	if (((testid>>20) == 0x203) || ((testid>>20) == 0x205) || ((testid>>20) == 0x207) || ((testid>>20) == 0x208)) {
+		armchip = 2;
+		*device_id = 0x20000410;
+		wlink_sendchip(config);
+		return ERROR_OK;
+	}
+
+	if ((armchip != 1) && (armchip != 2) && wlink549) {
 		LOG_ERROR(" WCH-Link-CH549 does not support this chip, please use WCH-LinkE");
 		return ERROR_FAIL;
 	}
@@ -517,15 +504,15 @@ static int ch32x_get_device_id(struct flash_bank *bank, uint32_t *device_id)
 }
 
 static int ch32x_get_flash_size(struct flash_bank *bank, uint16_t *flash_size_in_kb)
-{	
+{
 	struct target *target = bank->target;
-	uint32_t cpuid, flash_size_reg;
-    uint32_t temp;
-	int retval = target_read_u32(target, 0x1ffff7e0, flash_size_in_kb);	
+	uint32_t flash_size_reg;
+	int retval = target_read_u32(target, 0x1ffff7e0, &flash_size_reg);
 	if (retval != ERROR_OK)
 		return retval;
 
-	return retval;
+	*flash_size_in_kb = flash_size_reg;
+	return ERROR_OK;
 }
 
 static int ch32x_probe(struct flash_bank *bank)
@@ -536,7 +523,6 @@ static int ch32x_probe(struct flash_bank *bank)
 	uint32_t device_id;
 	int page_size;
 	uint32_t base_address = 0x08000000;
-    uint32_t rid=0;
 	ch32x_info->probed = 0;
 	ch32x_info->register_base = FLASH_REG_BASE_B0;
 	ch32x_info->user_data_offset = 10;
@@ -545,12 +531,11 @@ static int ch32x_probe(struct flash_bank *bank)
 	/* default factory read protection level 0 */
 	ch32x_info->default_rdp = 0xA5;	
 	
-  int retval = ch32x_get_device_id(bank, &device_id);
+	int retval = ch32x_get_device_id(bank, &device_id);
 	if (retval != ERROR_OK)
 		return retval;
 	
 	// LOG_INFO("device id = 0x%08" PRIx32 "", device_id);
-	rid=device_id & 0xfff ;
 	/* set page size, protection granularity and max flash size depending on family */
 	switch (device_id & 0xfff) {
 	case 0x410: /* medium density */
@@ -655,10 +640,8 @@ COMMAND_HANDLER(ch32x_handle_part_id_command)
 }
 #endif
 
-static int get_ch32x_info(struct flash_bank *bank, char *buf, int buf_size)
+static int get_ch32x_info(struct flash_bank *bank, struct command_invocation *cmd)
 {
-
-
 	return ERROR_OK;
 }
 
@@ -992,8 +975,6 @@ static int ch32x_mass_erase(struct flash_bank *bank)
 
 COMMAND_HANDLER(ch32x_handle_mass_erase_command)
 {
-	int i;
-
 	if (CMD_ARGC < 1)
 		return ERROR_COMMAND_SYNTAX_ERROR;
 
@@ -1005,7 +986,7 @@ COMMAND_HANDLER(ch32x_handle_mass_erase_command)
 	retval = ch32x_mass_erase(bank);
 	if (retval == ERROR_OK) {
 		/* set all sectors as erased */
-		for (i = 0; i < bank->num_sectors; i++)
+		for (unsigned int i = 0; i < bank->num_sectors; i++)
 			bank->sectors[i].is_erased = 1;
 
 		command_print(CMD, "ch32x mass erase complete");
